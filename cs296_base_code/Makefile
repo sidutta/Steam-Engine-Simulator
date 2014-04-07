@@ -96,9 +96,25 @@ doc:
 	@$(DOXYGEN) $(DOCDIR)/Doxyfile 2 > /dev/null
 	@$(ECHO) "Done"
 
+report: plot
+	@python3 ./scripts/g32_gen_html.py
+
+data: exe
+	@mkdir -p data;
+	@rm -f ./data/g32_lab09data_01.csv
+	@touch ./data/g32_lab09data_01.csv
+	@chmod +x -R ./scripts/g32_gen_csv.py; echo "Running g32_gen_csv.py..."; python ./scripts/g32_gen_csv.py;
+
+plot: data
+	@mkdir -p plots;
+	@chmod +x -R ./scripts/g32_gen_plots.py;
+	echo "Running g32_gen_plots.py...";
+	@python ./scripts/g32_gen_plots.py;
 clean:
 	@$(ECHO) -n "Cleaning up..."
 	@$(RM) -rf $(OBJDIR) *~ $(DEPS) $(SRCDIR)/*~
+	@$(RM) -rf $(DOCDIR)/html
+	@$(RM) -rf $(DOCDIR)/latex cs296_report_32.bbl $(DOCDIR)/latex cs296_report_32.aux $(DOCDIR)/latex cs296_report_32.dvi $(DOCDIR)/latex cs296_report_32.log $(DOCDIR)/latex cs296_report_32.pdf ./doc/g32_lab09_report.html
 	@$(ECHO) "Done"
 
 distclean: clean
