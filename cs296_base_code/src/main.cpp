@@ -27,7 +27,7 @@
 #include "render.hpp"
 #include "cs296_base.hpp"
 #include "callbacks.hpp"
-
+#include <sys/time.h>
 //! GLUI is the library used for drawing the GUI
 //! Learn more about GLUI by reading the GLUI documentation
 //! Learn to use preprocessor diectives to make your code portable
@@ -116,12 +116,38 @@ int main(int argc, char** argv)
 {
   test_count = 1;
   test_index = 0;
+  int num_iterations;
   test_selection = test_index;
+  num_iterations=atoi(argv[1]);
+  
   
   entry = sim;
   test = entry->create_fcn();
-
-  //! This initializes GLUT
+  float32 sum_step=0,sum_coll=0,sum_vel=0,sum_pos=0;
+  
+  struct timeval tv1, tv2;
+	gettimeofday(&tv1, NULL);
+	for(int i=0;i<num_iterations;i++)
+	{
+		test->step(&settings);
+		b2World* my_world = test->get_world();
+		const b2Profile& p = my_world->GetProfile();
+		sum_step=sum_step+p.step;
+		sum_coll=sum_coll+p.collide;		
+		sum_vel=sum_vel+p.solveVelocity;		
+		sum_pos=sum_pos+p.solvePosition;		
+	}
+	gettimeofday(&tv2, NULL);
+	float32 loop_time=float32((tv2.tv_sec-tv1.tv_sec)*1000000LL+tv2.tv_usec-tv1.tv_usec)/1000.0;
+	printf("Number of Iterations: %i\n",num_iterations);
+	printf("Average time per step is: %f ms\n",sum_step/num_iterations);
+	printf("Average time for collisions is: %f ms\n",sum_coll/num_iterations);
+	printf("Average time for velocity updates is: %f ms\n",sum_vel/num_iterations);
+	printf("Average time for position updates is: %f ms\n\n",sum_pos/num_iterations);
+	printf("Total loop time is: %.5f ms\n", loop_time);
+  
+  
+  /*//! This initializes GLUT
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
   glutInitWindowSize(width, height);
@@ -146,7 +172,7 @@ int main(int argc, char** argv)
   create_glui_ui();
 
   //! Enter the infinite GLUT event loop
-  glutMainLoop();
+  glutMainLoop();*/
   
   return 0;
 }
