@@ -1,0 +1,24 @@
+
+import subprocess
+import csv
+import re
+import numpy as np
+import matplotlib.pyplot as plt
+
+for l in range(50):
+	for m in range(5):
+		process = subprocess.Popen(['./mybins/cs296_32_exe',str(l+1)], stdout=subprocess.PIPE)
+		reader=list(process.stdout)
+		reader.insert(1,str(m+1))		
+		i=list()
+		for row in reader:
+			if(row!='\n'):
+				d=re.search(r'\d+\.*\d*',row)
+				h=str()					
+				h=h+d.group()
+				i.append(h)
+		e=csv.writer(open('./data/g32_lab09data_01.csv','a'),delimiter=',')
+		#e=csv.writer(open('h.csv','a'),delimiter=',')
+		e.writerow(i)
+
+
