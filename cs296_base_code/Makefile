@@ -23,6 +23,7 @@ BINDIR = $(PROJECT_ROOT)/bin
 DOCDIR = $(PROJECT_ROOT)/doc
 DATADIR = $(PROJECT_ROOT)/data
 PLOTDIR = $(PROJECT_ROOT)/plots
+INSTDIR = ../../..
 
 # Library Paths
 BOX2D_ROOT=$(EXTERNAL_ROOT)
@@ -61,7 +62,7 @@ OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 PFLAG= -p -O3
 MODE=cmake ../
 
-.PHONY: all setup doc clean distclean data plot report exe
+.PHONY: all setup doc clean distclean data plot report exe install dist
 
 all: setup $(BINDIR)/$(TARGET)
 
@@ -110,10 +111,25 @@ $(OBJS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 doc:
 	@$(ECHO) -n "Generating Doxygen Documentation ...  "
 	@$(RM) -rf doc/html
-	@$(DOXYGEN) $(DOCDIR)/Doxyfile 2 > /dev/null
+	#@$(DOXYGEN) $(DOCDIR)/Doxyfile 2 > /dev/null
 	@$(ECHO) "Done"
 
+install: setup exe report doc
+	@if test "$(INSTDIR)" = "."; \
+	then $(ECHO) "Installation Done"; \
+	elif test "$(INSTDIR)" = "./"; \
+	then $(ECHO) "Installation Done"; \
+	else  mkdir -p $(INSTDIR)/cs296_g32_project_installed; \
+	cp -rf bin doc scripts $(INSTDIR)/cs296_g32_project_installed; \
+	make distclean; \
+	$(ECHO) "Installation Done"; \
+	fi;
 
+dist: distclean
+	@$(ECHO) "Making Distributable Version"
+	cd ../../; \
+	tar -cvzf cs296_g32_project.tar.gz  ./g32_project ./README
+	@$(ECHO) "Done"	
 
 report: 
 	@python3 ./scripts/g32_gen_html.py
