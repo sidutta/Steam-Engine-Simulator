@@ -1,0 +1,8 @@
+Makefile~
+src/main.cpp~
+doc/g32_prof_report.tex~
+doc/g32_prof_report.log
+doc/g32_prof_report.aux
+scripts/g32_gen_csv.py~
+scripts/g32_gen_html.py~
+scripts/g32_gen_plots.py~

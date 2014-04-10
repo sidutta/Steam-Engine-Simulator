@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 import subprocess
 import csv
 import re
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 for l in range(500):
 	for m in range(50):
-		process = subprocess.Popen(['./mybins/cs296_32_exe',str(l+1)], stdout=subprocess.PIPE)
+		process = subprocess.Popen(['./bin/cs296_base',str(l+1)], stdout=subprocess.PIPE)
 		reader=list(process.stdout)
 		reader.insert(1,str(m+1))		
 		i=list()
@@ -17,7 +17,7 @@ for l in range(500):
 				h=str()					
 				h=h+d.group()
 				i.append(h)
-		e=csv.writer(open('./data/g32_lab09data_01.csv','a'),delimiter=',')
+		e=csv.writer(open('./data/g32_data_01.csv','a'),delimiter=',')
 		#e=csv.writer(open('h.csv','a'),delimiter=',')
 		e.writerow(i)
 

@@ -116,16 +116,16 @@ int main(int argc, char** argv)
 {
   test_count = 1;
   test_index = 0;
-  int num_iterations;
+  //int num_iterations;
   test_selection = test_index;
-  num_iterations=atoi(argv[1]);
+  //num_iterations=atoi(argv[1]);
   
   
   entry = sim;
   test = entry->create_fcn();
-  float32 sum_step=0,sum_coll=0,sum_vel=0,sum_pos=0;
+  //float32 sum_step=0,sum_coll=0,sum_vel=0,sum_pos=0;
   
-  struct timeval tv1, tv2;
+ /* struct timeval tv1, tv2;
 	gettimeofday(&tv1, NULL);
 	for(int i=0;i<num_iterations;i++)
 	{
@@ -144,10 +144,10 @@ int main(int argc, char** argv)
 	printf("Average time for collisions is: %f ms\n",sum_coll/num_iterations);
 	printf("Average time for velocity updates is: %f ms\n",sum_vel/num_iterations);
 	printf("Average time for position updates is: %f ms\n\n",sum_pos/num_iterations);
-	printf("Total loop time is: %.5f ms\n", loop_time);
+	printf("Total loop time is: %.5f ms\n", loop_time);*/
   
   
-  /*//! This initializes GLUT
+ //! This initializes GLUT
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
   glutInitWindowSize(width, height);
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
   create_glui_ui();
 
   //! Enter the infinite GLUT event loop
-  glutMainLoop();*/
+  glutMainLoop();
   
   return 0;
 }

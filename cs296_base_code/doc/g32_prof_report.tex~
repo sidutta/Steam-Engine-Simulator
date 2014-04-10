@@ -17,13 +17,13 @@
 \label{overflow}
 \end{figure}
 
-In the above graph, we observe that the average step time in the beginning is quite high. As the number of iterations increases, the average step time keeps decreasing. There is a sharp fall after around 30 iterations. But after 140 iterations, the step time increases a bit till around 150 and then levels off. The above graph shows data for 300 iterations. 
+In the above graph, we observe that the average step time in the beginning is quite high. As the number of iterations increases, the average step time keeps decreasing. There is a sharp fall after around 30 iterations. But after 50 iterations, the step time increases slowly till around 150 and then levels off. The above graph shows data for 500 iterations. 
 
-This can be explained if we realize that in a given loop greater time is spent to resolve collisions. The occassional spikes in the graph show that collision solver is called only when needed.
+This can be explained if we realize that initially the wheels and rods are all still. As the wheel begins to move, forces are exerted upon the revolute joints of various rods. Since in a given loop greater part of the time is spent on resolving collisions, the start time is quite high as various velocity and position calculations have to be made to get things moving. 
+
+As time passes on approximate solutions to equations are obtained and much lesser time and iterations of position and velocity solver is required to obtain fine tuned solutions. This explains the drop in time. There are frequent spikes in the graph due to the continuos calls made to the solver when piston reaches an end of the oscillation. The graph levels off and becomes regular with time since most bodies begin to move in a definite order and the same kind of motions are repeated after a certain period.
 
 In every loop "Step" in B2World in called. A solver is used in collision time, velocity time and position time. Box2D also uses a constraint solver for solving constraints. The constraint solver solves all the constraints in the simulation, one at a time. Altough single constraint can be solved perfectly, when we solve one constraint, we slightly disrupt other constraints. Therefore to get a good solution, we need to iterate over all constraints a number of times. Thus, multiple iterations for position and velocity are needed.
-
-In the beginning, there are a huge number of collisions involving the dominos and balls hitting each other. But as time passes most things come to a halt and collisions reduce. Hence, the plateau in the graph.
 
 \begin{figure}[ht!]
 \centering
@@ -32,7 +32,7 @@ In the beginning, there are a huge number of collisions involving the dominos an
 \label{overflow}
 \end{figure}
 
-This graph reiterates the observations made earlier. After around 200 iterations, the total loop time becomes completely linear to the number of iterations. This is in concurrence with the fact that the average step time becomes constant.
+This graph reiterates the observations made earlier.The total loop time is completely linear to the number of iterations. This is in concurrence with the fact that the average step time becomes constant.
 
 \begin{figure}[ht!]
 \centering
@@ -41,8 +41,7 @@ This graph reiterates the observations made earlier. After around 200 iterations
 \label{overflow}
 \end{figure}
 
-The above plot represents average step time and y-error bars. As can be clearly observed, the difference between the maximum and minimum values is very large. The values are taken within 15 system iterations(very close times for processing). The differences can be attributed to system processes. The error range is intitially a bit high when step times are high but becomes constant as the step time levels off.
-
+The above plot represents average step time and y-error bars. As can be clearly observed, the difference between the maximum and minimum values is very large. The values are taken within 50 system iterations(very close times for processing). The differences can be attributed to system processes. The error range is intitially a bit high when step times are high but decreases gradually as the step time levels off.
 
 \subsection{Time vs gettimeofday()}
 Time writes to standard error giving various statistics regarding the running time of the program. These statistics consist of 
@@ -90,24 +89,6 @@ For what follows, the profiler was run over 1000 iterations.
 \end{figure}
 
 The release build is faster than the debug build since it uses optimization. Also it eliminates debugging information since it meant for the end-user. We used the O3 flag for compilation and used cmake -DCMAKE\_BUILD\_TYPE=Release for building.
-
-
-\subsection{Debug Build}
-
-Following the release mode, the debug mode was tried out. This was done by eliminating the -O3 flag during compilation and using cmake -DCMAKE\_BUILD\_TYPE=Debug  for building.
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[width=150mm]{g32_debug_prof.png}
-\caption{Call graph for Release}
-\label{overflow}
-\end{figure}
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[width=150mm]{debug.png}
-\caption{Call graph for debug}
-\label{overflow}
-\end{figure}
+By observing perf report, we conclude that Position Constraint Solver and velocity constraint solver takes more time. But we can't optimise them any further as they are key for constraints.We observe that b2Vec2 takes significantly more time.This reveals that time taking processes are very less in our simulation. 
 
 \end{document}

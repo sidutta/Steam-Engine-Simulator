@@ -51,7 +51,7 @@ out.close()
 f.close()
 
 f=open('final.html','r+')
-out=open('./doc/g32_lab09_report.html','w')
+out=open('./doc/g32_report.html','w')
 
 for line in f:
 	line=line.replace("\\times","*")
