@@ -40,12 +40,7 @@ b2PolygonShape shape;
      b2CircleShape shape1;
 b2FixtureDef fixtureDef, f;
 b2BodyDef fake;
-b2Body* thinPiston;
-b2RevoluteJoint* mj;
-b2RevoluteJoint* mj2;
-
 b2RevoluteJointDef rjd, rjd1;
-void keyboard(unsigned char key);
     static base_sim_t* create()
     {
       return new dominos_t;

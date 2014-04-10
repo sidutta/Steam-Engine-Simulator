@@ -1,0 +1,5 @@
+cmake -DBOX2D_INSTALL=ON -DBOX2D_BUILD_SHARED=ON ..
+        make
+       sudo make install
+cd Testbed
+./Testbed
