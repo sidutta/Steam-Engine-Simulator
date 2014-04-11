@@ -21,6 +21,8 @@ SRCDIR = $(PROJECT_ROOT)/src
 OBJDIR = $(PROJECT_ROOT)/obj
 BINDIR = $(PROJECT_ROOT)/bin
 DOCDIR = $(PROJECT_ROOT)/doc
+DATADIR = $(PROJECT_ROOT)/data
+PLOTDIR = $(PROJECT_ROOT)/plots
 
 # Library Paths
 BOX2D_ROOT=$(EXTERNAL_ROOT)
@@ -31,7 +33,7 @@ GL_ROOT=/usr/include/
 LIBS = -lBox2D -lglui -lglut -lGLU -lGL
 
 # Compiler and Linker flags
-CPPFLAGS =-g -O3 -Wall -fno-strict-aliasing
+CPPFLAGS =-g -Wall -fno-strict-aliasing
 CPPFLAGS+=-I $(BOX2D_ROOT)/include -I $(GLUI_ROOT)/include
 LDFLAGS+=-L $(BOX2D_ROOT)/lib -L $(GLUI_ROOT)/lib
 
@@ -56,16 +58,31 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp)
 INCS := $(wildcard $(SRCDIR)/*.hpp)
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
+PFLAG= -p -O3
+MODE=cmake ../
 
-.PHONY: all setup doc clean distclean
+.PHONY: all setup doc clean distclean data plot report exe
 
 all: setup $(BINDIR)/$(TARGET)
 
 setup:
-	@$(ECHO) "Setting up compilation..."
+	@if test -e $(EXTERNAL_ROOT)/include/Box2D -a -e $(EXTERNAL_ROOT)/lib/Box2D;\
+	then echo "Box2D has already been installed";\
+	else tar xzf $(PROJECT_ROOT)/external/src/Box2D.tgz -C $(EXTERNAL_ROOT)/src \
+	&& printf "Installing Box2D" \
+	&& cd $(EXTERNAL_ROOT)/src/Box2D \
+	&& mkdir -p build296 \
+	&& cd build296 \
+	&& $(MODE) \
+	&& make	\
+	&& make install \
+	&& cd .. && cd .. && cd .. && cd .. ;\
+	fi;
 	@mkdir -p obj
 	@mkdir -p bin
 
+exe: setup $(BINDIR)/$(TARGET)
+	
 $(BINDIR)/$(TARGET): $(OBJS)
 	@$(PRINTF) "$(MESG_COLOR)Building executable:$(NO_COLOR) $(FILE_COLOR) %16s$(NO_COLOR)" "$(notdir $@)"
 	@$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 2> temp.log || touch temp.err
@@ -81,7 +98,7 @@ $(BINDIR)/$(TARGET): $(OBJS)
 
 $(OBJS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	@$(PRINTF) "$(MESG_COLOR)Compiling: $(NO_COLOR) $(FILE_COLOR) %25s$(NO_COLOR)" "$(notdir $<)"
-	@$(CC) $(CPPFLAGS) -c $< -o $@ -MD 2> temp.log || touch temp.err
+	@$(CC) $(CPPFLAGS) $(PFLAG) -c $< -o $@ -MD 2> temp.log || touch temp.err
 	@if test -e temp.err; \
 	then $(PRINTF) $(ERR_FMT) $(ERR_STRING) && $(CAT) temp.log; \
 	elif test -s temp.log; \
@@ -96,10 +113,51 @@ doc:
 	@$(DOXYGEN) $(DOCDIR)/Doxyfile 2 > /dev/null
 	@$(ECHO) "Done"
 
+
+
+report: 
+	@python3 ./scripts/g32_gen_html.py
+	@cd  $(PROJECT_ROOT)/doc ;\
+	latex g32_prof_report ;\
+	bibtex g32_prof_report; \
+	latex g32_prof_report; \
+	latex g32_prof_report; \
+	dvipdf g32_prof_report.dvi g32_prof_report.pdf ;\
+	rm  -rf  g32_prof_report.bbl g32_prof_report.blg g32_prof_report.aux g32_prof_report.log g32_prof_report.dvi;\
+
+
+data: exe
+	@mkdir -p data;
+	@rm -f ./data/g32_data_01.csv
+	@touch ./data/g32_data_01.csv
+	@chmod +x -R ./scripts/g32_gen_csv.py; echo "Running g32_gen_csv.py..."; python ./scripts/g32_gen_csv.py;
+
+plot: data
+	@chmod +x -R ./scripts/g32_gen_plots.py;
+	echo "Running g32_gen_plots.py...";
+	@python ./scripts/g32_gen_plots.py;
 clean:
 	@$(ECHO) -n "Cleaning up..."
 	@$(RM) -rf $(OBJDIR) *~ $(DEPS) $(SRCDIR)/*~
+	@$(RM) -rf $(DOCDIR)/html
+	@$(RM) -rf $(DOCDIR)/cs296_report_32.bbl $(DOCDIR)/g32_prof_report.aux $(DOCDIR)/g32_prof_report.dvi $(DOCDIR)/g32_prof_report.log $(DOCDIR)/g32_prof_report.pdf $(DOCDIR)/g32_report.html
 	@$(ECHO) "Done"
 
 distclean: clean
 	@$(RM) -rf $(BINDIR) $(DOCDIR)/html
+	@$(RM) -rf $(EXTERNAL_ROOT)/src/Box2D
+	@$(RM) -rf $(EXTERNAL_ROOT)/lib/libBox2D.a
+	@$(RM) -rf $(EXTERNAL_ROOT)/include/Box2D
+
+.PHONY: debug_prof release_prof 
+
+
+debug_prof: MODE=cmake -DCMAKE_BUILD_TYPE=Debug ../
+debug_prof: PFLAG=-g
+debug_prof: setup exe
+	@perf record -g -- ./bin/$(TARGET) 1000 > $(DOCDIR)/g32_debug_prof.dat
+
+release_prof: MODE=cmake -DCMAKE_BUILD_TYPE=Release ../		
+release_prof: PFLAG=-O3
+release_prof: setup exe
+	@perf record -g -- ./bin/$(TARGET) 1000 > $(DOCDIR)/g32_release_prof.dat
